@@ -38,7 +38,7 @@ var initCmd = &cobra.Command{
 
 		var doneInputOrgs bool
 		for !doneInputOrgs {
-			fmt.Println("\nCreate new organization:")
+			fmt.Println("\nCreate new org:")
 
 			var org schema.Org
 
@@ -54,10 +54,52 @@ var initCmd = &cobra.Command{
 				break
 			}
 
+			var hasOrderers string
+			if err := lib.SelectItem(&hasOrderers, "Has Orderers", []string{"yes", "no"}); err != nil {
+				break
+			}
+			if hasOrderers == "yes" {
+				var doneInputOrderers bool
+
+				for !doneInputOrderers {
+					fmt.Println("\nCreate new org orderer:")
+
+					var orderer schema.OrgOrderer
+
+					if err := lib.Input(&orderer.GroupName, "Group name"); err != nil {
+						break
+					}
+
+					if err := lib.Input(&orderer.Prefix, "Prefix"); err != nil {
+						break
+					}
+
+					if err := lib.Input(&orderer.Type, "Type"); err != nil {
+						break
+					}
+
+					if err := lib.InputNumber(&orderer.Instances, "Instances"); err != nil {
+						break
+					}
+
+					org.Orderers = append(org.Orderers, orderer)
+
+					var createAnotherOrderer string
+					err = lib.SelectItem(&createAnotherOrderer, "Want to create another orderer", []string{"yes", "no"})
+					if err != nil {
+						break
+					}
+
+					if createAnotherOrderer == "no" {
+						break
+					}
+				}
+			}
+
 			sample.Orgs = append(sample.Orgs, org)
 
 			var createAnotherOrg string
-			err = lib.SelectItem(&createAnotherOrg, "Want to create another one", []string{"yes", "no"})
+			err = lib.SelectItem(&createAnotherOrg, "Want to create another org", []string{"yes", "no"})
 			if err != nil {
 				break
 			}

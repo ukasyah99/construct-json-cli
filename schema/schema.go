@@ -18,10 +18,18 @@ type Monitoring struct {
 
 type Org struct {
 	Organization OrgOrganization `json:"organization"`
+	Orderers     []OrgOrderer    `json:"orderers,omitempty"`
 }
 
 type OrgOrganization struct {
 	Name    string `json:"name"`
 	Domain  string `json:"domain"`
 	MspName string `json:"mspName,omitempty"`
+}
+
+type OrgOrderer struct {
+	GroupName string `json:"groupName"`
+	Prefix    string `json:"prefix"`
+	Type      string `json:"type"`
+	Instances int    `json:"instances"`
 }
