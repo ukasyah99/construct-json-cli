@@ -22,3 +22,19 @@ func SelectItem(v *string, label string, items []string) error {
 
 	return nil
 }
+
+func Input(v *string, label string) error {
+	prompt := promptui.Prompt{
+		Label: label,
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("selectItem failed %v\n", err)
+		return err
+	}
+
+	*v = result
+
+	return nil
+}
