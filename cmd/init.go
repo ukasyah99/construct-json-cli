@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/elliotchance/pie/v2"
 	"github.com/spf13/cobra"
@@ -211,7 +212,9 @@ var initCmd = &cobra.Command{
 		// Done creating channels
 
 		s, _ := json.MarshalIndent(sample, "", "\t")
-		fmt.Println(string(s))
+		// fmt.Println(string(s))
+
+		_ = ioutil.WriteFile("sample.json", s, 0644)
 	},
 }
 
