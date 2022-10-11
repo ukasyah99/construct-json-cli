@@ -1,9 +1,10 @@
 package schema
 
 type Sample struct {
-	Schema string `json:"$schema"`
-	Global Global `json:"global"`
-	Orgs   []Org  `json:"orgs"`
+	Schema   string    `json:"$schema"`
+	Global   Global    `json:"global"`
+	Orgs     []Org     `json:"orgs"`
+	Channels []Channel `json:"channels"`
 }
 
 type Global struct {
@@ -44,4 +45,14 @@ type OrgPeer struct {
 	Prefix    string `json:"prefix"`
 	Instances int    `json:"instances"`
 	DB        string `json:"db"`
+}
+
+type Channel struct {
+	Name string       `json:"name"`
+	Orgs []ChannelOrg `json:"orgs"`
+}
+
+type ChannelOrg struct {
+	Name  string   `json:"name"`
+	Peers []string `json:"peers"`
 }

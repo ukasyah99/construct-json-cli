@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/elliotchance/pie/v2"
 	"github.com/spf13/cobra"
 	"github.com/ukasyah99/construct-json-cli/lib"
 	"github.com/ukasyah99/construct-json-cli/schema"
+	"golang.org/x/exp/slices"
 )
 
 type OrgInput struct {
@@ -18,12 +20,16 @@ type OrgInput struct {
 var initCmd = &cobra.Command{
 	Use: "init",
 	Run: func(cmd *cobra.Command, args []string) {
+		// Default sample configuration
 		sample := schema.Sample{
 			Schema: "https://github.com/hyperledger/releases/download/1.1.0/schema.json",
 			Global: schema.Global{
-				TLS: true,
+				FabricVersion: "1.4.6",
+				TLS:           true,
+				Monitoring:    schema.Monitoring{Loglevel: "debug"},
 			},
-			Orgs: []schema.Org{},
+			Orgs:     []schema.Org{},
+			Channels: []schema.Channel{},
 		}
 
 		err := lib.SelectItem(&sample.Global.FabricVersion, "Fabric version", []string{"1.4.6", "2.2.4"})
@@ -42,7 +48,7 @@ var initCmd = &cobra.Command{
 
 			var org schema.Org
 
-			if err := lib.Input(&org.Organization.Name, "Name"); err != nil {
+			if err := lib.Input(&org.Organization.Name, "Org Name"); err != nil {
 				break
 			}
 
@@ -54,6 +60,7 @@ var initCmd = &cobra.Command{
 				break
 			}
 
+			// Start creating orderers
 			var hasOrderers string
 			if err := lib.SelectItem(&hasOrderers, "Has Orderers", []string{"yes", "no"}); err != nil {
 				break
@@ -93,6 +100,7 @@ var initCmd = &cobra.Command{
 					}
 				}
 			}
+			// Done creating orderers
 
 			var hasCA string
 			if err := lib.SelectItem(&hasCA, "Has CA", []string{"yes", "no"}); err != nil {
@@ -131,6 +139,76 @@ var initCmd = &cobra.Command{
 			}
 		}
 		// Done creating orgs
+
+		// Start creating channels
+		for true {
+			fmt.Println("\nCreate new channel:")
+
+			var channel schema.Channel
+
+			if err := lib.Input(&channel.Name, "Channel Name"); err != nil {
+				break
+			}
+
+			// Filter orgs that have peers
+			orgs := pie.Of(sample.Orgs).
+				Filter(func(o schema.Org) bool {
+					return o.Peer != nil
+				}).Result
+
+			// Get org names and peers
+			var orgNames []string
+			var orgPeers [][]string
+			for _, org := range orgs {
+				orgNames = append(orgNames, org.Organization.Name)
+
+				// Automatically generate peer names based on number of instances
+				var peers []string
+				for i := 0; i < org.Peer.Instances; i++ {
+					peers = append(peers, fmt.Sprintf("peer%d", i))
+				}
+				orgPeers = append(orgPeers, peers)
+			}
+
+			// Start adding orgs into channel
+			for true {
+				fmt.Println("\nAdd org into channel:")
+
+				var channelOrg schema.ChannelOrg
+
+				if err := lib.SelectItem(&channelOrg.Name, "Org name", orgNames); err != nil {
+					break
+				}
+
+				orgNameIndex := slices.Index(orgNames, channelOrg.Name)
+				channelOrg.Peers = orgPeers[orgNameIndex]
+
+				channel.Orgs = append(channel.Orgs, channelOrg)
+
+				var addAnotherOrg string
+				err = lib.SelectItem(&addAnotherOrg, "Want to add another org", []string{"yes", "no"})
+				if err != nil {
+					break
+				}
+
+				if addAnotherOrg == "no" {
+					break
+				}
+			}
+			// Done adding orgs into channel
+
+			sample.Channels = append(sample.Channels, channel)
+			var createAnotherChannel string
+			err = lib.SelectItem(&createAnotherChannel, "Want to create another channel", []string{"yes", "no"})
+			if err != nil {
+				break
+			}
+
+			if createAnotherChannel == "no" {
+				break
+			}
+		}
+		// Done creating channels
 
 		s, _ := json.MarshalIndent(sample, "", "\t")
 		fmt.Println(string(s))
