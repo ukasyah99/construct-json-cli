@@ -19,6 +19,8 @@ type Monitoring struct {
 type Org struct {
 	Organization OrgOrganization `json:"organization"`
 	Orderers     []OrgOrderer    `json:"orderers,omitempty"`
+	CA           *OrgCA          `json:"ca,omitempty"`
+	Peer         *OrgPeer        `json:"peer,omitempty"`
 }
 
 type OrgOrganization struct {
@@ -32,4 +34,14 @@ type OrgOrderer struct {
 	Prefix    string `json:"prefix"`
 	Type      string `json:"type"`
 	Instances int    `json:"instances"`
+}
+
+type OrgCA struct {
+	Prefix string `json:"prefix"`
+}
+
+type OrgPeer struct {
+	Prefix    string `json:"prefix"`
+	Instances int    `json:"instances"`
+	DB        string `json:"db"`
 }

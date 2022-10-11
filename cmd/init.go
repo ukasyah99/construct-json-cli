@@ -96,6 +96,28 @@ var initCmd = &cobra.Command{
 				}
 			}
 
+			var hasCA string
+			if err := lib.SelectItem(&hasCA, "Has CA", []string{"yes", "no"}); err != nil {
+				break
+			}
+			if hasCA == "yes" {
+				ca := schema.OrgCA{Prefix: "ca"}
+				org.CA = &ca
+			}
+
+			var hasPeer string
+			if err := lib.SelectItem(&hasPeer, "Has Peer", []string{"yes", "no"}); err != nil {
+				break
+			}
+			if hasPeer == "yes" {
+				peer := schema.OrgPeer{
+					Prefix:    "peer",
+					Instances: 2,
+					DB:        "LevelDb",
+				}
+				org.Peer = &peer
+			}
+
 			sample.Orgs = append(sample.Orgs, org)
 
 			var createAnotherOrg string
