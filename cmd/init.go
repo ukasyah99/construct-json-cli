@@ -36,8 +36,8 @@ var initCmd = &cobra.Command{
 			return
 		}
 
-		var doneInputOrgs bool
-		for !doneInputOrgs {
+		// Start creating orgs
+		for true {
 			fmt.Println("\nCreate new org:")
 
 			var org schema.Org
@@ -59,9 +59,7 @@ var initCmd = &cobra.Command{
 				break
 			}
 			if hasOrderers == "yes" {
-				var doneInputOrderers bool
-
-				for !doneInputOrderers {
+				for true {
 					fmt.Println("\nCreate new org orderer:")
 
 					var orderer schema.OrgOrderer
@@ -101,6 +99,7 @@ var initCmd = &cobra.Command{
 				break
 			}
 			if hasCA == "yes" {
+				// CA values are defined automatically for simplicity
 				ca := schema.OrgCA{Prefix: "ca"}
 				org.CA = &ca
 			}
@@ -110,6 +109,7 @@ var initCmd = &cobra.Command{
 				break
 			}
 			if hasPeer == "yes" {
+				// Peer values are defined automatically for simplicity
 				peer := schema.OrgPeer{
 					Prefix:    "peer",
 					Instances: 2,
@@ -130,6 +130,7 @@ var initCmd = &cobra.Command{
 				break
 			}
 		}
+		// Done creating orgs
 
 		s, _ := json.MarshalIndent(sample, "", "\t")
 		fmt.Println(string(s))
